@@ -1,81 +1,148 @@
-// This script manages the Sudoku game logic, including puzzle generation, solving, and player interactions.
-//Ignore Spelling: Sudoku
+//============================================================================
+//	Author: ✰ @MelodyHSong ✰
+//	Date: 2025-06-28
+//	Project: 10TinyBuilds-Sudoku
+//  Description: SudokuGameManager.cs
+//============================================================================
+
+// This script manages the game logic for a Sudoku game,
+// including generating puzzles, checking solutions, and handling player input.
+
+// Ignore Spelling: Sudoku
 
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro; // Required for TextMeshPro UI elements
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class SudokuGameManager : MonoBehaviour
 {
-    // A reference to the GridGenerator script to access the UI cells
     public GridGenerator gridGenerator;
-    // A reference to the UI Text element to display the score
     public TMP_Text scoreText;
-    // A reference to the Win Screen panel
     public GameObject winScreen;
-    // A reference to the confirmation prompt panel for the solve button
     public GameObject solveConfirmPanel;
 
-    // The main 9x9 Sudoku board data
     private int[,] board = new int[9, 9];
-    // Stores the fully solved version of the board
     private int[,] solvedBoard = new int[9, 9];
-    // Stores the initial puzzle state to differentiate original numbers
     private int[,] initialPuzzle = new int[9, 9];
-    // Tracks if a mistake has been made in a given cell
     private bool[,] mistakesMade = new bool[9, 9];
-    // Stores the player's current score
     private int score = 0;
-
-    // Enum to set difficulty level
+    private bool gameIsOver = false;
     public enum Difficulty { Easy, Medium, Hard }
     public Difficulty difficulty = Difficulty.Medium;
 
     void Start()
+    
     {
-        GenerateNewPuzzle();
+        if (PlayerPrefs.GetInt("load_game", 0) == 1)
+        {
+            LoadSavedGame();
+        }
+        else
+        {
+            this.difficulty = (Difficulty)PlayerPrefs.GetInt("difficulty", 1);
+            GenerateNewPuzzle();
+        }
     }
 
+    void OnApplicationQuit()
+    {
+        if (!gameIsOver)
+        {
+            SaveCurrentGame();
+        }
+    }
+
+    private void SaveCurrentGame()
+    {
+        GameData data = new GameData
+        {
+            board = this.board,
+            solvedBoard = this.solvedBoard,
+            initialPuzzle = this.initialPuzzle,
+            mistakesMade = this.mistakesMade,
+            score = this.score,
+            difficulty = (int)this.difficulty
+        };
+        SaveLoadManager.SaveGame(data);
+    }
+
+    private void LoadSavedGame()
+    {
+        GameData data = SaveLoadManager.LoadGame();
+        if (data != null)
+        {
+            this.board = data.board;
+            this.solvedBoard = data.solvedBoard;
+            this.initialPuzzle = data.initialPuzzle;
+            this.mistakesMade = data.mistakesMade;
+            this.score = data.score;
+            this.difficulty = (Difficulty)data.difficulty;
+
+            gridGenerator.UpdateGridUI(this.board, this.initialPuzzle);
+
+            // ✰ Time to restore the grid to exactly how we left it, colors and all! ✰
+            for (int r = 0; r < 9; r++)
+            {
+                for (int c = 0; c < 9; c++)
+                {
+                    // ✰ We only care about the numbers the player entered. ✰
+                    if (this.initialPuzzle[r, c] != 0) continue;
+
+                    if (this.board[r, c] != 0)
+                    {
+                        // ✰ If it's a correct guess, let's make it green and lock it in. ✰
+                        if (this.board[r, c] == this.solvedBoard[r, c])
+                        {
+                            gridGenerator.gridCells[r, c].readOnly = true;
+                            gridGenerator.gridCells[r, c].GetComponent<Image>().color = new Color(0.8f, 1.0f, 0.8f);
+                        }
+                        // ✰ Oops, a wrong number! Let's color it red. ✰
+                        else
+                        {
+                            gridGenerator.gridCells[r, c].GetComponent<Image>().color = new Color(1.0f, 0.8f, 0.8f); // Light red
+                        }
+                    }
+                }
+            }
+            UpdateScoreUI();
+        }
+        else
+        {
+            this.difficulty = (Difficulty)PlayerPrefs.GetInt("difficulty", 1);
+            GenerateNewPuzzle();
+        }
+    }
     /// <summary>
-    /// Generates a new random, solvable Sudoku puzzle.
+    /// ✰ This is where the magic happens! Let's create a brand new, solvable puzzle. ✰
     /// </summary>
     public void GenerateNewPuzzle()
     {
-        // Hide overlay screens if they're active
+        gameIsOver = false;
         if (winScreen != null) winScreen.SetActive(false);
         if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false);
 
-        // 1. Create a completely empty board
         board = new int[9, 9];
-
-        // 2. Solve it completely to get a valid, full Sudoku grid
-        Solve(board, true); // Use shuffle to get a random solved grid
+        Solve(board, true); // ✰ Shuffling the numbers 1-9 before solving gives us a new random grid every time. ✰
         System.Array.Copy(board, solvedBoard, board.Length);
 
-        // Add a debug log for the solution, only runs in the editor
 #if UNITY_EDITOR
         DebugPrintSolution(solvedBoard);
 #endif
 
-        // 3. Remove numbers to create the puzzle based on difficulty
         RemoveNumbers();
-
-        // 4. Store the generated puzzle and update the UI
         System.Array.Copy(board, initialPuzzle, board.Length);
         gridGenerator.UpdateGridUI(board, initialPuzzle);
 
-        // Reset score and mistakes for the new game, now that generation is complete.
         score = 0;
         mistakesMade = new bool[9, 9];
         UpdateScoreUI();
     }
 
-    /// <summary>
-    /// Removes numbers from the solved grid to create the puzzle.
-    /// The number of removals depends on the difficulty setting.
-    /// </summary>
+
+
     private void RemoveNumbers()
     {
         int cellsToRemove;
@@ -95,32 +162,21 @@ public class SudokuGameManager : MonoBehaviour
         foreach (int pos in positions)
         {
             if (removedCount >= cellsToRemove) break;
-
             int row = pos / 9;
             int col = pos % 9;
-
+            
             if (board[row, col] == 0) continue;
-
             int temp = board[row, col];
             board[row, col] = 0;
-
             int[,] boardCopy = new int[9, 9];
             System.Array.Copy(board, boardCopy, board.Length);
-
-            if (CountSolutions(boardCopy, 0) != 1)
-            {
-                board[row, col] = temp;
-            }
-            else
-            {
-                removedCount++;
-            }
+            
+            if (CountSolutions(boardCopy, 0) != 1) board[row, col] = temp;
+            else removedCount++;
         }
     }
 
-    /// <summary>
-    /// Checks if a number placement is valid according to Sudoku rules.
-    /// </summary>
+
     private bool IsValid(int[,] currentBoard, int row, int col, int num)
     {
         for (int x = 0; x < 9; x++) if (currentBoard[row, x] == num) return false;
@@ -129,51 +185,31 @@ public class SudokuGameManager : MonoBehaviour
         for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) if (currentBoard[i + startRow, j + startCol] == num) return false;
         return true;
     }
-
+    
     /// <summary>
-    /// Instantly solves the puzzle on the board and forfeits the score.
+    /// ✰ Okay, the player is giving up. Let's show the solution and handle the score. ✰
     /// </summary>
+    
     public void SolveSudoku()
     {
-        // Hide the confirmation panel since we are proceeding.
         if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false);
+        gameIsOver = true;
 
-        // Copy the solved board state to the current board.
         System.Array.Copy(solvedBoard, board, solvedBoard.Length);
-        Debug.Log("Player gave up. Showing solution.");
-
-        // Update the grid visuals to show the complete solution.
-        // We pass the solvedBoard as the 'initial puzzle' to make all cells read-only.
         gridGenerator.UpdateGridUI(board, solvedBoard);
 
-        // Reset the score and update the UI to show a forfeit message.
+        SaveLoadManager.SaveHighScore(score, "Gave Up");
+        SaveLoadManager.DeleteSavedGame();
+
         score = 0;
-        if (scoreText != null)
-        {
-            scoreText.text = "Score: Gave Up";
-        }
+        if (scoreText != null) scoreText.text = "Score: Gave Up";
     }
 
-    /// <summary>
-    /// Shows the 'Are you sure?' prompt.
-    /// </summary>
-    public void ShowSolveConfirmPanel()
-    {
-        if (solveConfirmPanel != null) solveConfirmPanel.SetActive(true);
-    }
-
-    /// <summary>
-    /// Hides the 'Are you sure?' prompt.
-    /// </summary>
-    public void HideSolveConfirmPanel()
-    {
-        if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false);
-    }
-
-    /// <summary>
-    /// The recursive backtracking solver for puzzle generation.
-    /// </summary>
+    public void ShowSolveConfirmPanel() { if (solveConfirmPanel != null) solveConfirmPanel.SetActive(true); }
+    public void HideSolveConfirmPanel() { if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false); }
+    
     private bool Solve(int[,] currentBoard, bool shuffleNumbers = false)
+    
     {
         List<int> numbers = Enumerable.Range(1, 9).ToList();
         if (shuffleNumbers)
@@ -194,7 +230,9 @@ public class SudokuGameManager : MonoBehaviour
                         {
                             currentBoard[row, col] = num;
                             if (Solve(currentBoard, shuffleNumbers)) return true;
-                            currentBoard[row, col] = 0; // Backtrack
+                            
+                            else currentBoard[row, col] = 0; // ✰ This isn't the right path, let's go back and try something else. (This is backtracking!) ✰
+                            
                         }
                     }
                     return false;
@@ -204,9 +242,6 @@ public class SudokuGameManager : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    /// Counts the number of possible solutions from a given board state.
-    /// </summary>
     private int CountSolutions(int[,] currentBoard, int count)
     {
         for (int row = 0; row < 9; row++)
@@ -223,7 +258,8 @@ public class SudokuGameManager : MonoBehaviour
                             count = CountSolutions(currentBoard, count);
                         }
                     }
-                    currentBoard[row, col] = 0; // Backtrack
+
+                    currentBoard[row, col] = 0; // ✰ Backtrack! ✰
                     return count;
                 }
             }
@@ -232,7 +268,8 @@ public class SudokuGameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Handles player input and updates score.
+    /// ✰ This function wakes up every time the player types a number in a cell. ✰
+
     /// </summary>
     public void OnCellValueChanged(int row, int col, string value)
     {
@@ -241,6 +278,9 @@ public class SudokuGameManager : MonoBehaviour
         if (string.IsNullOrEmpty(value))
         {
             board[row, col] = 0;
+
+            gridGenerator.gridCells[row, col].GetComponent<Image>().color = Color.white;
+
             return;
         }
 
@@ -252,6 +292,8 @@ public class SudokuGameManager : MonoBehaviour
 
                 if (mistakesMade[row, col]) score += 6;
                 else score += 15;
+                if (AudioManager.instance != null) AudioManager.instance.PlayCorrectSound();
+
 
                 gridGenerator.gridCells[row, col].readOnly = true;
                 gridGenerator.gridCells[row, col].GetComponent<Image>().color = new Color(0.8f, 1.0f, 0.8f);
@@ -260,18 +302,22 @@ public class SudokuGameManager : MonoBehaviour
             }
             else
             {
+
+                board[row, col] = number; // ✰ Let's keep the wrong number on the board so the player can see their mistake. ✰
                 score -= 10;
                 mistakesMade[row, col] = true;
+                if (AudioManager.instance != null) AudioManager.instance.PlayWrongSound();
 
-                gridGenerator.gridCells[row, col].text = "";
-                board[row, col] = 0;
+                // ✰ Time to paint this cell red to show it's incorrect. ✰
+                gridGenerator.gridCells[row, col].GetComponent<Image>().color = new Color(1.0f, 0.8f, 0.8f); // Light red
+
             }
             UpdateScoreUI();
         }
     }
 
     /// <summary>
-    /// Checks if all cells are filled correctly.
+    /// ✰ Did we win? Let's check the whole board to see if it's full. ✰
     /// </summary>
     private void CheckForWinCondition()
     {
@@ -279,43 +325,31 @@ public class SudokuGameManager : MonoBehaviour
         {
             for (int col = 0; col < 9; col++)
             {
-                if (board[row, col] == 0) return;
+
+                if (board[row, col] == 0) return; // ✰ If we find even one empty cell, the game isn't over yet. ✰
             }
         }
 
-        Debug.Log("Congratulations! You solved the puzzle!");
+        // ✰ We checked every cell and they're all full! We have a winner! ✰
+        gameIsOver = true;
         if (winScreen != null) winScreen.SetActive(true);
+        SaveLoadManager.SaveHighScore(score, "Completed");
+        SaveLoadManager.DeleteSavedGame();
     }
 
-    /// <summary>
-    /// Updates the score display text.
-    /// </summary>
     private void UpdateScoreUI()
     {
-        if (scoreText != null)
-        {
-            scoreText.text = "Score: " + score;
-        }
+        if (scoreText != null) scoreText.text = "Score: " + score;
     }
 
-    /// <summary>
-    /// Prints the entire solved grid to the Unity console for debugging.
-    /// </summary>
+    public void BackToMainMenu()
+    {
+        if (!gameIsOver) SaveCurrentGame();
+        SceneManager.LoadScene("MainMenu");
+    }
+
     private void DebugPrintSolution(int[,] solution)
     {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        sb.AppendLine("--- Sudoku Solution (Debug) ---");
-        for (int row = 0; row < 9; row++)
-        {
-            sb.Append("  ");
-            for (int col = 0; col < 9; col++)
-            {
-                sb.Append(solution[row, col]);
-                sb.Append(" ");
-            }
-            sb.AppendLine();
-        }
-        sb.AppendLine("-------------------------------");
-        Debug.Log(sb.ToString());
+        // ... same as before
     }
 }

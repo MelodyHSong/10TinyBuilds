@@ -1,2 +1,3 @@
 # 10TinyBuilds
-Repository for my 30 tiny games challenge. 
+Repository for my 10 tiny games challenge. 
+
