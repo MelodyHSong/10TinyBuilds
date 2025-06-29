@@ -1,6 +1,6 @@
 //============================================================================
 //	Author: ✰ @MelodyHSong ✰
-//	Date: 2025-06-28
+//	Date: 2025-06-29
 //	Project: 10TinyBuilds-Sudoku
 //  Description: SudokuGameManager.cs
 //============================================================================
@@ -24,6 +24,8 @@ public class SudokuGameManager : MonoBehaviour
     public TMP_Text scoreText;
     public GameObject winScreen;
     public GameObject solveConfirmPanel;
+    public GameObject solveButton;
+    public GameObject showResultsButton;
 
     private int[,] board = new int[9, 9];
     private int[,] solvedBoard = new int[9, 9];
@@ -123,6 +125,10 @@ public class SudokuGameManager : MonoBehaviour
         if (winScreen != null) winScreen.SetActive(false);
         if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false);
 
+        // ✰ Let's make sure our UI is in the correct state for a new game. ✰
+        if (solveButton != null) solveButton.SetActive(true);
+        if (showResultsButton != null) showResultsButton.SetActive(false);
+
         board = new int[9, 9];
         Solve(board, true);
         System.Array.Copy(board, solvedBoard, board.Length);
@@ -184,6 +190,10 @@ public class SudokuGameManager : MonoBehaviour
     {
         if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false);
         gameIsOver = true;
+
+        // ✰ Hide the game buttons since the game is over. ✰
+        if (solveButton != null) solveButton.SetActive(false);
+        if (showResultsButton != null) showResultsButton.SetActive(false);
 
         System.Array.Copy(solvedBoard, board, solvedBoard.Length);
         gridGenerator.UpdateGridUI(board, solvedBoard);
@@ -302,9 +312,26 @@ public class SudokuGameManager : MonoBehaviour
         }
 
         gameIsOver = true;
-        if (winScreen != null) winScreen.SetActive(true);
+        if (winScreen != null)
+        {
+            winScreen.SetActive(true);
+            if (solveButton != null) solveButton.SetActive(false);
+            if (showResultsButton != null) showResultsButton.SetActive(false);
+        }
         SaveLoadManager.SaveHighScore(score, "Completed");
         SaveLoadManager.DeleteSavedGame();
+    }
+
+    public void CloseWinScreen()
+    {
+        if (winScreen != null) winScreen.SetActive(false);
+        if (showResultsButton != null) showResultsButton.SetActive(true);
+    }
+
+    public void ReopenWinScreen()
+    {
+        if (winScreen != null) winScreen.SetActive(true);
+        if (showResultsButton != null) showResultsButton.SetActive(false);
     }
 
     private void UpdateScoreUI()
@@ -318,9 +345,6 @@ public class SudokuGameManager : MonoBehaviour
         SceneManager.LoadScene("MainMenu");
     }
 
-    /// <summary>
-    /// ✰ Prints the entire solved grid to the Unity console for debugging. ✰
-    /// </summary>
     private void DebugPrintSolution(int[,] solution)
     {
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
