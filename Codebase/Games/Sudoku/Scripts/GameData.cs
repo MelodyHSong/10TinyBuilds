@@ -11,7 +11,7 @@
 
 using System.Collections.Generic;
 
-// * A class to hold all the data for a saved game state *
+// ✰ Think of this as a save file blueprint. It holds everything we need to remember about a game in progress. ✰
 [System.Serializable]
 public class GameData
 {
@@ -23,16 +23,16 @@ public class GameData
     public int difficulty;
 }
 
-// * A class for a single high score entry *
+// ✰ This blueprint is for a single entry in our high score list. ✰
 [System.Serializable]
 public class HighScore
 {
     public int score;
-    public string status; // * "Completed" or "Gave Up" *
+    public string status; // ✰ So we know if the player won or gave up. ✰
     public string date;
 }
 
-// * A class to hold a list of all high scores *
+// ✰ And this holds the entire list of our top scores! ✰
 [System.Serializable]
 public class HighScoresData
 {
