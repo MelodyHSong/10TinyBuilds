@@ -25,7 +25,7 @@ public class AudioManager : MonoBehaviour
 
     private void Awake()
     {
-        // * Singleton pattern to ensure only one AudioManager exists *
+        // ✰ This is a special 'Singleton' pattern. It makes sure we only ever have one AudioManager, even when we switch scenes. ✰
         if (instance == null)
         {
             instance = this;
@@ -39,7 +39,7 @@ public class AudioManager : MonoBehaviour
 
     void Start()
     {
-        // * Apply settings and start the music *
+        // ✰ Let's get the music going based on our saved settings! ✰
         UpdateBGMVolume();
         UpdateSFXVolume();
         bgmSource.Play();
