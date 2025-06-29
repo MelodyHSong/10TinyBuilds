@@ -4,6 +4,7 @@
 //	Author: @MelodyHSong ✰
 //	Date: 2025-06-28
 //	Project: 10TinyBuilds-Sudoku
+//  Description: SaveLoadManager.cs
 //============================================================================
 
 // This script manages saving and loading game data and high scores for a Sudoku game. 
