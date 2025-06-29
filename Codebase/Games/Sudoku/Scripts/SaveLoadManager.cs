@@ -1,7 +1,5 @@
-
-
 //============================================================================
-//	Author: @MelodyHSong ✰
+//	Author: ✰ @MelodyHSong ✰
 //	Date: 2025-06-28
 //	Project: 10TinyBuilds-Sudoku
 //  Description: SaveLoadManager.cs
