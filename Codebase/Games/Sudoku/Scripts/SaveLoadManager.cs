@@ -1,3 +1,5 @@
+
+
 //============================================================================
 //	Author: ✰ @MelodyHSong ✰
 //	Date: 2025-06-28
@@ -7,12 +9,11 @@
 
 // This script manages saving and loading game data and high scores for a Sudoku game. 
 
+// Ignore Spelling: Sudoku
+
 using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
-
-//Ignore Spelling: Sudoku
-
 
 public static class SaveLoadManager
 {
@@ -56,7 +57,7 @@ public static class SaveLoadManager
 
         highScoresData.highScores.Insert(0, newHighScore);
 
-        // * Keep only the last 10 scores *
+        // ✰ We only want to keep the top 10 scores, so let's remove any extras. ✰
         if (highScoresData.highScores.Count > 10)
         {
             highScoresData.highScores.RemoveAt(10);
@@ -75,4 +76,5 @@ public static class SaveLoadManager
         }
         return new HighScoresData();
     }
+}
 }
