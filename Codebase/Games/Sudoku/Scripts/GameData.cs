@@ -7,9 +7,9 @@
 
 // This script defines the data structures used for saving game state and high scores in a Sudoku game.
 
-using System.Collections.Generic;
-
 // Ignore Spelling: Sudoku
+
+using System.Collections.Generic;
 
 // * A class to hold all the data for a saved game state *
 [System.Serializable]
