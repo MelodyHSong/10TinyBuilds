@@ -1,5 +1,3 @@
-
-
 //============================================================================
 //	Author: ✰ @MelodyHSong ✰
 //	Date: 2025-06-28
@@ -76,5 +74,4 @@ public static class SaveLoadManager
         }
         return new HighScoresData();
     }
-}
 }
