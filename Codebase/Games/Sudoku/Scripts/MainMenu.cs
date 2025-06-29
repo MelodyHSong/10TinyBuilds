@@ -31,10 +31,10 @@ public class MainMenu : MonoBehaviour
 
     void Start()
     {
-        // * Check if a saved game exists and enable/disable the continue button *
+        // ✰ Let's see if there's a saved game to continue! ✰
         continueButton.interactable = File.Exists(Application.persistentDataPath + "/sudokuSaveData.json");
 
-        // * Load and apply sound settings *
+        // ✰ Time to load our sound preferences from last time. ✰
         bgmToggle.isOn = PlayerPrefs.GetInt("bgmMuted", 0) == 0;
         sfxToggle.isOn = PlayerPrefs.GetInt("sfxMuted", 0) == 0;
     }
@@ -42,13 +42,13 @@ public class MainMenu : MonoBehaviour
     public void NewGame(int difficulty)
     {
         PlayerPrefs.SetInt("difficulty", difficulty);
-        PlayerPrefs.SetInt("load_game", 0); // * 0 for false *
+        PlayerPrefs.SetInt("load_game", 0); // ✰ 0 means we're not loading a game. ✰
         SceneManager.LoadScene("GameScene");
     }
 
     public void ContinueGame()
     {
-        PlayerPrefs.SetInt("load_game", 1); // * 1 for true *
+        PlayerPrefs.SetInt("load_game", 1); // ✰ 1 means we *are* loading a game. ✰
         SceneManager.LoadScene("GameScene");
     }
 
@@ -78,7 +78,7 @@ public class MainMenu : MonoBehaviour
 
     private void PopulateHighScores()
     {
-        // * Clear previous entries *
+        // ✰ Let's clear out the old scores before showing the new ones. ✰
         foreach (Transform child in highScoresContainer)
         {
             Destroy(child.gameObject);
