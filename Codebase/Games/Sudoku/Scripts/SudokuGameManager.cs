@@ -10,7 +10,6 @@
 
 // Ignore Spelling: Sudoku
 
-
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
@@ -31,11 +30,11 @@ public class SudokuGameManager : MonoBehaviour
     private bool[,] mistakesMade = new bool[9, 9];
     private int score = 0;
     private bool gameIsOver = false;
-
     public enum Difficulty { Easy, Medium, Hard }
     public Difficulty difficulty = Difficulty.Medium;
 
     void Start()
+    
     {
         if (PlayerPrefs.GetInt("load_game", 0) == 1)
         {
@@ -142,6 +141,8 @@ public class SudokuGameManager : MonoBehaviour
         UpdateScoreUI();
     }
 
+
+
     private void RemoveNumbers()
     {
         int cellsToRemove;
@@ -163,15 +164,18 @@ public class SudokuGameManager : MonoBehaviour
             if (removedCount >= cellsToRemove) break;
             int row = pos / 9;
             int col = pos % 9;
+            
             if (board[row, col] == 0) continue;
             int temp = board[row, col];
             board[row, col] = 0;
             int[,] boardCopy = new int[9, 9];
             System.Array.Copy(board, boardCopy, board.Length);
+            
             if (CountSolutions(boardCopy, 0) != 1) board[row, col] = temp;
             else removedCount++;
         }
     }
+
 
     private bool IsValid(int[,] currentBoard, int row, int col, int num)
     {
@@ -181,9 +185,11 @@ public class SudokuGameManager : MonoBehaviour
         for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) if (currentBoard[i + startRow, j + startCol] == num) return false;
         return true;
     }
+    
     /// <summary>
     /// ✰ Okay, the player is giving up. Let's show the solution and handle the score. ✰
     /// </summary>
+    
     public void SolveSudoku()
     {
         if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false);
@@ -201,8 +207,9 @@ public class SudokuGameManager : MonoBehaviour
 
     public void ShowSolveConfirmPanel() { if (solveConfirmPanel != null) solveConfirmPanel.SetActive(true); }
     public void HideSolveConfirmPanel() { if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false); }
-
+    
     private bool Solve(int[,] currentBoard, bool shuffleNumbers = false)
+    
     {
         List<int> numbers = Enumerable.Range(1, 9).ToList();
         if (shuffleNumbers)
@@ -223,7 +230,9 @@ public class SudokuGameManager : MonoBehaviour
                         {
                             currentBoard[row, col] = num;
                             if (Solve(currentBoard, shuffleNumbers)) return true;
+                            
                             else currentBoard[row, col] = 0; // ✰ This isn't the right path, let's go back and try something else. (This is backtracking!) ✰
+                            
                         }
                     }
                     return false;
@@ -249,6 +258,7 @@ public class SudokuGameManager : MonoBehaviour
                             count = CountSolutions(currentBoard, count);
                         }
                     }
+
                     currentBoard[row, col] = 0; // ✰ Backtrack! ✰
                     return count;
                 }
@@ -256,8 +266,10 @@ public class SudokuGameManager : MonoBehaviour
         }
         return count + 1;
     }
+
     /// <summary>
     /// ✰ This function wakes up every time the player types a number in a cell. ✰
+
     /// </summary>
     public void OnCellValueChanged(int row, int col, string value)
     {
@@ -266,7 +278,9 @@ public class SudokuGameManager : MonoBehaviour
         if (string.IsNullOrEmpty(value))
         {
             board[row, col] = 0;
+
             gridGenerator.gridCells[row, col].GetComponent<Image>().color = Color.white;
+
             return;
         }
 
@@ -275,9 +289,11 @@ public class SudokuGameManager : MonoBehaviour
             if (number == solvedBoard[row, col])
             {
                 board[row, col] = number;
+
                 if (mistakesMade[row, col]) score += 6;
                 else score += 15;
                 if (AudioManager.instance != null) AudioManager.instance.PlayCorrectSound();
+
 
                 gridGenerator.gridCells[row, col].readOnly = true;
                 gridGenerator.gridCells[row, col].GetComponent<Image>().color = new Color(0.8f, 1.0f, 0.8f);
@@ -286,6 +302,7 @@ public class SudokuGameManager : MonoBehaviour
             }
             else
             {
+
                 board[row, col] = number; // ✰ Let's keep the wrong number on the board so the player can see their mistake. ✰
                 score -= 10;
                 mistakesMade[row, col] = true;
@@ -293,10 +310,12 @@ public class SudokuGameManager : MonoBehaviour
 
                 // ✰ Time to paint this cell red to show it's incorrect. ✰
                 gridGenerator.gridCells[row, col].GetComponent<Image>().color = new Color(1.0f, 0.8f, 0.8f); // Light red
+
             }
             UpdateScoreUI();
         }
     }
+
     /// <summary>
     /// ✰ Did we win? Let's check the whole board to see if it's full. ✰
     /// </summary>
@@ -306,6 +325,7 @@ public class SudokuGameManager : MonoBehaviour
         {
             for (int col = 0; col < 9; col++)
             {
+
                 if (board[row, col] == 0) return; // ✰ If we find even one empty cell, the game isn't over yet. ✰
             }
         }
