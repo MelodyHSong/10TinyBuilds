@@ -11,13 +11,12 @@
 // Ignore Spelling: Sudoku
 
 
+using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using UnityEngine;
-using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class SudokuGameManager : MonoBehaviour
 {
@@ -84,15 +83,28 @@ public class SudokuGameManager : MonoBehaviour
             this.difficulty = (Difficulty)data.difficulty;
 
             gridGenerator.UpdateGridUI(this.board, this.initialPuzzle);
-            // * Re-lock already solved cells *
+
+            // ✰ Time to restore the grid to exactly how we left it, colors and all! ✰
             for (int r = 0; r < 9; r++)
             {
                 for (int c = 0; c < 9; c++)
                 {
-                    if (this.board[r, c] != 0 && this.board[r, c] == this.solvedBoard[r, c] && this.initialPuzzle[r, c] == 0)
+                    // ✰ We only care about the numbers the player entered. ✰
+                    if (this.initialPuzzle[r, c] != 0) continue;
+
+                    if (this.board[r, c] != 0)
                     {
-                        gridGenerator.gridCells[r, c].readOnly = true;
-                        gridGenerator.gridCells[r, c].GetComponent<Image>().color = new Color(0.8f, 1.0f, 0.8f);
+                        // ✰ If it's a correct guess, let's make it green and lock it in. ✰
+                        if (this.board[r, c] == this.solvedBoard[r, c])
+                        {
+                            gridGenerator.gridCells[r, c].readOnly = true;
+                            gridGenerator.gridCells[r, c].GetComponent<Image>().color = new Color(0.8f, 1.0f, 0.8f);
+                        }
+                        // ✰ Oops, a wrong number! Let's color it red. ✰
+                        else
+                        {
+                            gridGenerator.gridCells[r, c].GetComponent<Image>().color = new Color(1.0f, 0.8f, 0.8f); // Light red
+                        }
                     }
                 }
             }
@@ -105,7 +117,7 @@ public class SudokuGameManager : MonoBehaviour
         }
     }
     /// <summary>
-    /// * Generates a new random, solvable Sudoku puzzle. *
+    /// ✰ This is where the magic happens! Let's create a brand new, solvable puzzle. ✰
     /// </summary>
     public void GenerateNewPuzzle()
     {
@@ -114,7 +126,7 @@ public class SudokuGameManager : MonoBehaviour
         if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false);
 
         board = new int[9, 9];
-        Solve(board, true); // * Use shuffle to get a random solved grid *
+        Solve(board, true); // ✰ Shuffling the numbers 1-9 before solving gives us a new random grid every time. ✰
         System.Array.Copy(board, solvedBoard, board.Length);
 
 #if UNITY_EDITOR
@@ -170,7 +182,7 @@ public class SudokuGameManager : MonoBehaviour
         return true;
     }
     /// <summary>
-    /// * Instantly solves the puzzle on the board and forfeits the score. *
+    /// ✰ Okay, the player is giving up. Let's show the solution and handle the score. ✰
     /// </summary>
     public void SolveSudoku()
     {
@@ -211,7 +223,7 @@ public class SudokuGameManager : MonoBehaviour
                         {
                             currentBoard[row, col] = num;
                             if (Solve(currentBoard, shuffleNumbers)) return true;
-                            else currentBoard[row, col] = 0; // * Backtrack *
+                            else currentBoard[row, col] = 0; // ✰ This isn't the right path, let's go back and try something else. (This is backtracking!) ✰
                         }
                     }
                     return false;
@@ -237,7 +249,7 @@ public class SudokuGameManager : MonoBehaviour
                             count = CountSolutions(currentBoard, count);
                         }
                     }
-                    currentBoard[row, col] = 0; // * Backtrack *
+                    currentBoard[row, col] = 0; // ✰ Backtrack! ✰
                     return count;
                 }
             }
@@ -245,7 +257,7 @@ public class SudokuGameManager : MonoBehaviour
         return count + 1;
     }
     /// <summary>
-    /// * Handles player input and updates score. *
+    /// ✰ This function wakes up every time the player types a number in a cell. ✰
     /// </summary>
     public void OnCellValueChanged(int row, int col, string value)
     {
@@ -254,6 +266,7 @@ public class SudokuGameManager : MonoBehaviour
         if (string.IsNullOrEmpty(value))
         {
             board[row, col] = 0;
+            gridGenerator.gridCells[row, col].GetComponent<Image>().color = Color.white;
             return;
         }
 
@@ -273,18 +286,19 @@ public class SudokuGameManager : MonoBehaviour
             }
             else
             {
+                board[row, col] = number; // ✰ Let's keep the wrong number on the board so the player can see their mistake. ✰
                 score -= 10;
                 mistakesMade[row, col] = true;
                 if (AudioManager.instance != null) AudioManager.instance.PlayWrongSound();
 
-                gridGenerator.gridCells[row, col].text = "";
-                board[row, col] = 0;
+                // ✰ Time to paint this cell red to show it's incorrect. ✰
+                gridGenerator.gridCells[row, col].GetComponent<Image>().color = new Color(1.0f, 0.8f, 0.8f); // Light red
             }
             UpdateScoreUI();
         }
     }
     /// <summary>
-    /// * Checks if all cells are filled correctly. *
+    /// ✰ Did we win? Let's check the whole board to see if it's full. ✰
     /// </summary>
     private void CheckForWinCondition()
     {
@@ -292,10 +306,11 @@ public class SudokuGameManager : MonoBehaviour
         {
             for (int col = 0; col < 9; col++)
             {
-                if (board[row, col] == 0) return; // * If any cell is empty, we haven't won yet *
+                if (board[row, col] == 0) return; // ✰ If we find even one empty cell, the game isn't over yet. ✰
             }
         }
-        // * If the loop completes, all cells are filled correctly *
+
+        // ✰ We checked every cell and they're all full! We have a winner! ✰
         gameIsOver = true;
         if (winScreen != null) winScreen.SetActive(true);
         SaveLoadManager.SaveHighScore(score, "Completed");
