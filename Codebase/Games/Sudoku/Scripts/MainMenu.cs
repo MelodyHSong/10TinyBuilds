@@ -1,6 +1,6 @@
 //============================================================================
 //	Author: ✰ @MelodyHSong ✰
-//	Date: 2025-06-28
+//	Date: 2025-06-29
 //	Project: 10TinyBuilds-Sudoku
 //  Description: MainMenu.cs
 //============================================================================
@@ -24,8 +24,9 @@ public class MainMenu : MonoBehaviour
     public GameObject settingsPanel;
     public GameObject aboutPanel;
     public GameObject highScoresPanel;
-    public Toggle bgmToggle;
-    public Toggle sfxToggle;
+    public GameObject newGamePanel;
+    public Slider bgmSlider;
+    public Slider sfxSlider;
     public Transform highScoresContainer;
     public GameObject highScoreEntryPrefab;
 
@@ -35,12 +36,13 @@ public class MainMenu : MonoBehaviour
         continueButton.interactable = File.Exists(Application.persistentDataPath + "/sudokuSaveData.json");
 
         // ✰ Time to load our sound preferences from last time. ✰
-        bgmToggle.isOn = PlayerPrefs.GetInt("bgmMuted", 0) == 0;
-        sfxToggle.isOn = PlayerPrefs.GetInt("sfxMuted", 0) == 0;
+        bgmSlider.value = PlayerPrefs.GetFloat("bgmVolume", 1f);
+        sfxSlider.value = PlayerPrefs.GetFloat("sfxVolume", 1f);
     }
 
     public void NewGame(int difficulty)
     {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
         PlayerPrefs.SetInt("difficulty", difficulty);
         PlayerPrefs.SetInt("load_game", 0); // ✰ 0 means we're not loading a game. ✰
         SceneManager.LoadScene("GameScene");
@@ -48,31 +50,67 @@ public class MainMenu : MonoBehaviour
 
     public void ContinueGame()
     {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
         PlayerPrefs.SetInt("load_game", 1); // ✰ 1 means we *are* loading a game. ✰
         SceneManager.LoadScene("GameScene");
     }
 
-    public void OpenSettings() { settingsPanel.SetActive(true); }
-    public void CloseSettings() { settingsPanel.SetActive(false); }
-    public void OpenAbout() { aboutPanel.SetActive(true); }
-    public void CloseAbout() { aboutPanel.SetActive(false); }
+    public void OpenNewGamePanel()
+    {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        newGamePanel.SetActive(true);
+    }
+
+    public void CloseNewGamePanel()
+    {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        newGamePanel.SetActive(false);
+    }
+
+    public void OpenSettings()
+    {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        settingsPanel.SetActive(true);
+    }
+    public void CloseSettings()
+    {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        settingsPanel.SetActive(false);
+    }
+    public void OpenAbout()
+    {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        aboutPanel.SetActive(true);
+    }
+    public void CloseAbout()
+    {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        aboutPanel.SetActive(false);
+    }
 
     public void OpenHighScores()
     {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
         highScoresPanel.SetActive(true);
         PopulateHighScores();
     }
-    public void CloseHighScores() { highScoresPanel.SetActive(false); }
-
-    public void OnBGMToggle(bool is_on)
+    public void CloseHighScores()
     {
-        PlayerPrefs.SetInt("bgmMuted", is_on ? 0 : 1);
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        highScoresPanel.SetActive(false);
+    }
+
+    public void OnBGMVolumeChanged()
+    {
+        float volume = bgmSlider.value;
+        PlayerPrefs.SetFloat("bgmVolume", volume);
         if (AudioManager.instance != null) AudioManager.instance.UpdateBGMVolume();
     }
 
-    public void OnSFXToggle(bool is_on)
+    public void OnSFXVolumeChanged()
     {
-        PlayerPrefs.SetInt("sfxMuted", is_on ? 0 : 1);
+        float volume = sfxSlider.value;
+        PlayerPrefs.SetFloat("sfxVolume", volume);
         if (AudioManager.instance != null) AudioManager.instance.UpdateSFXVolume();
     }
 

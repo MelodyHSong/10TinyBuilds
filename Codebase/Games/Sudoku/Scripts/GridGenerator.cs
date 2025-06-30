@@ -1,24 +1,30 @@
-// Ignore Spelling: Sudoku
+//============================================================================
+//	Author: ✰ @MelodyHSong ✰
+//	Date: 2025-06-29
+//	Project: 10TinyBuilds-Sudoku
+//  Description: GridGenerator.cs
+//============================================================================
+
+// This script generates a 9x9 grid of InputFields for a Sudoku game, allowing players to input numbers.
+
+// Ignore Spelling: Sudoku, grey
+
 
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // 1. Add this line for TextMeshPro
+using TMPro;
 
 public class GridGenerator : MonoBehaviour
 {
-    // Prefab for a single Sudoku cell (an InputField)
     public GameObject cellPrefab;
-
-    // 2. Change the type from InputField to TMP_InputField
     public TMP_InputField[,] gridCells = new TMP_InputField[9, 9];
 
     void Awake()
     {
         GenerateGrid();
     }
-
     /// <summary>
-    /// Instantiates the 9x9 grid of InputField cells.
+    /// ✰ Instantiates the 9x9 grid of InputField cells. ✰
     /// </summary>
     private void GenerateGrid()
     {
@@ -44,7 +50,6 @@ public class GridGenerator : MonoBehaviour
                 GameObject cellObject = Instantiate(cellPrefab, transform);
                 cellObject.name = $"Cell_{row}_{col}";
 
-                // 3. Change the component you're getting to TMP_InputField
                 TMP_InputField cellInput = cellObject.GetComponent<TMP_InputField>();
                 gridCells[row, col] = cellInput;
 
@@ -54,41 +59,35 @@ public class GridGenerator : MonoBehaviour
             }
         }
     }
-
     /// <summary>
-    /// Updates the text of the InputFields based on the board data.
+    /// ✰ Updates the text of the InputFields based on the board data. ✰
     /// </summary>
-    /// <param name="board">The 9x9 integer array of the current Sudoku board.</param>
-    /// <param name="initialPuzzle">The 9x9 integer array of the initial puzzle to identify locked cells.</param>
     public void UpdateGridUI(int[,] board, int[,] initialPuzzle)
     {
         for (int row = 0; row < 9; row++)
         {
             for (int col = 0; col < 9; col++)
             {
-                // 4. Change the type here as well
                 TMP_InputField cellInput = gridCells[row, col];
                 int number = board[row, col];
 
-                // Added a safety check to prevent the error and give a clearer message
                 if (cellInput == null)
                 {
                     Debug.LogError($"Cell at ({row},{col}) is missing its TMP_InputField component or was not assigned correctly!");
-                    continue; // Skip this broken cell
+                    continue;
                 }
 
-                // Reset cell style first
                 cellInput.readOnly = false;
                 cellInput.GetComponent<Image>().color = Color.white;
 
                 if (number != 0)
                 {
                     cellInput.text = number.ToString();
-                    // Make the initial numbers read-only and give them a distinct color
+                    // ✰ We check against the initial puzzle to lock the original numbers ✰
                     if (initialPuzzle[row, col] != 0)
                     {
                         cellInput.readOnly = true;
-                        cellInput.GetComponent<Image>().color = new Color(0.85f, 0.85f, 0.9f); // A light grey/blue
+                        cellInput.GetComponent<Image>().color = new Color(0.85f, 0.85f, 0.9f);
                     }
                 }
                 else
