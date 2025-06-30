@@ -1,6 +1,6 @@
 //============================================================================
 //	Author: ✰ @MelodyHSong ✰
-//	Date: 2025-06-28
+//	Date: 2025-06-29
 //	Project: 10TinyBuilds-Sudoku
 //  Description: AudioManager.cs
 //============================================================================
@@ -42,7 +42,6 @@ public class AudioManager : MonoBehaviour
         // ✰ Let's get the music going based on our saved settings! ✰
         UpdateBGMVolume();
         UpdateSFXVolume();
-        bgmSource.Play();
     }
 
     public void PlayCorrectSound()
@@ -62,11 +61,21 @@ public class AudioManager : MonoBehaviour
 
     public void UpdateBGMVolume()
     {
-        bgmSource.mute = PlayerPrefs.GetInt("bgmMuted", 0) == 1;
+        float volume = PlayerPrefs.GetFloat("bgmVolume", 1f);
+        bgmSource.volume = volume;
+
+        if (volume > 0 && !bgmSource.isPlaying)
+        {
+            bgmSource.Play();
+        }
+        else if (volume == 0 && bgmSource.isPlaying)
+        {
+            bgmSource.Stop();
+        }
     }
 
     public void UpdateSFXVolume()
     {
-        sfxSource.mute = PlayerPrefs.GetInt("sfxMuted", 0) == 1;
+        sfxSource.volume = PlayerPrefs.GetFloat("sfxVolume", 1f);
     }
 }
