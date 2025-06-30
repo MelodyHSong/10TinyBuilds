@@ -2,6 +2,12 @@
 
 ---
 
+# Version InDev 0.0.4 - 2025-06-30
+
+Bug Fix (Audio System): Refactored the AudioManager to get its AudioSource components via code in the Awake function. This prevents a race condition during scene loading that was causing audio source references to be lost, which in turn fixes a bug where grid generation would fail when loading the GameScene from the MainMenu
+
+---
+
 # Version InDev 0.0.3 - 2025-06-30
 
 Bug Fix (Audio System): Replaced mute toggles with volume sliders for BGM and SFX to provide more granular control and fix persistent mute bugs. Refactored AudioManager to correctly handle Play() and Stop() calls based on volume.
