@@ -1,6 +1,6 @@
 //============================================================================
 //	Author: ✰ @MelodyHSong ✰
-//	Date: 2025-06-29
+//	Date: 2025-06-30
 //	Project: 10TinyBuilds-Sudoku
 //  Description: AudioManager.cs
 //============================================================================
@@ -11,13 +11,14 @@
 // Ignore Spelling: bgm, sfx
 
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager instance;
 
-    public AudioSource bgmSource;
-    public AudioSource sfxSource;
+    private AudioSource bgmSource;
+    private AudioSource sfxSource;
 
     public AudioClip correctSound;
     public AudioClip wrongSound;
@@ -30,6 +31,15 @@ public class AudioManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // ✰ Let's find our AudioSource components by code to make sure we always have them. ✰
+            AudioSource[] sources = GetComponents<AudioSource>();
+            bgmSource = sources[0];
+            sfxSource = sources[1];
+
+            // ✰ Configure the BGM source correctly. ✰
+            bgmSource.loop = true;
+            bgmSource.playOnAwake = false;
         }
         else
         {
@@ -46,17 +56,17 @@ public class AudioManager : MonoBehaviour
 
     public void PlayCorrectSound()
     {
-        sfxSource.PlayOneShot(correctSound);
+        if (sfxSource.volume > 0) sfxSource.PlayOneShot(correctSound);
     }
 
     public void PlayWrongSound()
     {
-        sfxSource.PlayOneShot(wrongSound);
+        if (sfxSource.volume > 0) sfxSource.PlayOneShot(wrongSound);
     }
 
     public void PlayClickSound()
     {
-        sfxSource.PlayOneShot(clickSound);
+        if (sfxSource.volume > 0) sfxSource.PlayOneShot(clickSound);
     }
 
     public void UpdateBGMVolume()
