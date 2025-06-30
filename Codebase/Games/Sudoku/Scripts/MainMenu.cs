@@ -1,6 +1,6 @@
 //============================================================================
 //	Author: ✰ @MelodyHSong ✰
-//	Date: 2025-06-29
+//	Date: 2025-06-30
 //	Project: 10TinyBuilds-Sudoku
 //  Description: MainMenu.cs
 //============================================================================
@@ -42,7 +42,7 @@ public class MainMenu : MonoBehaviour
 
     public void NewGame(int difficulty)
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         PlayerPrefs.SetInt("difficulty", difficulty);
         PlayerPrefs.SetInt("load_game", 0); // ✰ 0 means we're not loading a game. ✰
         SceneManager.LoadScene("GameScene");
@@ -50,53 +50,53 @@ public class MainMenu : MonoBehaviour
 
     public void ContinueGame()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         PlayerPrefs.SetInt("load_game", 1); // ✰ 1 means we *are* loading a game. ✰
         SceneManager.LoadScene("GameScene");
     }
 
     public void OpenNewGamePanel()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         newGamePanel.SetActive(true);
     }
 
     public void CloseNewGamePanel()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         newGamePanel.SetActive(false);
     }
 
     public void OpenSettings()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         settingsPanel.SetActive(true);
     }
     public void CloseSettings()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         settingsPanel.SetActive(false);
     }
     public void OpenAbout()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         aboutPanel.SetActive(true);
     }
     public void CloseAbout()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         aboutPanel.SetActive(false);
     }
 
     public void OpenHighScores()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         highScoresPanel.SetActive(true);
         PopulateHighScores();
     }
     public void CloseHighScores()
     {
-        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+        PlayClick();
         highScoresPanel.SetActive(false);
     }
 
@@ -139,8 +139,14 @@ public class MainMenu : MonoBehaviour
         }
     }
 
+    private void PlayClick()
+    {
+        if (AudioManager.instance != null) AudioManager.instance.PlayClickSound();
+    }
+
     public void QuitGame()
     {
+        PlayClick();
         Application.Quit();
     }
 }
