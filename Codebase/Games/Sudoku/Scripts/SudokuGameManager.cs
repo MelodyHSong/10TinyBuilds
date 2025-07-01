@@ -1,6 +1,6 @@
-//============================================================================
+﻿//============================================================================
 //	Author: ✰ @MelodyHSong ✰
-//	Date: 2025-06-29
+//	Date: 2025-07-01
 //	Project: 10TinyBuilds-Sudoku
 //  Description: SudokuGameManager.cs
 //============================================================================
@@ -33,6 +33,7 @@ public class SudokuGameManager : MonoBehaviour
     private bool[,] mistakesMade = new bool[9, 9];
     private int score = 0;
     private bool gameIsOver = false;
+    private bool isGenerating = false;
 
     public enum Difficulty { Easy, Medium, Hard }
     public Difficulty difficulty = Difficulty.Medium;
@@ -62,10 +63,10 @@ public class SudokuGameManager : MonoBehaviour
     {
         GameData data = new GameData
         {
-            board = this.board,
-            solvedBoard = this.solvedBoard,
-            initialPuzzle = this.initialPuzzle,
-            mistakesMade = this.mistakesMade,
+            board = To1DArray(this.board),
+            solvedBoard = To1DArray(this.solvedBoard),
+            initialPuzzle = To1DArray(this.initialPuzzle),
+            mistakesMade = To1DArray(this.mistakesMade),
             score = this.score,
             difficulty = (int)this.difficulty
         };
@@ -75,12 +76,14 @@ public class SudokuGameManager : MonoBehaviour
     private void LoadSavedGame()
     {
         GameData data = SaveLoadManager.LoadGame();
-        if (data != null)
+        if (data != null && data.board != null)
         {
-            this.board = data.board;
-            this.solvedBoard = data.solvedBoard;
-            this.initialPuzzle = data.initialPuzzle;
-            this.mistakesMade = data.mistakesMade;
+            isGenerating = true; // ✰ Don't trigger sounds/scoring while loading ✰
+
+            this.board = To2DArray(data.board, 9, 9);
+            this.solvedBoard = To2DArray(data.solvedBoard, 9, 9);
+            this.initialPuzzle = To2DArray(data.initialPuzzle, 9, 9);
+            this.mistakesMade = To2DArray(data.mistakesMade, 9, 9);
             this.score = data.score;
             this.difficulty = (Difficulty)data.difficulty;
 
@@ -111,9 +114,16 @@ public class SudokuGameManager : MonoBehaviour
                 }
             }
             UpdateScoreUI();
+            isGenerating = false; // ✰ Loading is done, re-enable sounds/scoring ✰
         }
         else
         {
+            if (data != null && data.board == null)
+            {
+                // If the save file is corrupt, delete it and start a new game
+                Debug.LogWarning("Save file was corrupted. Starting a new game.");
+                SaveLoadManager.DeleteSavedGame();
+            }
             this.difficulty = (Difficulty)PlayerPrefs.GetInt("difficulty", 1);
             GenerateNewPuzzle();
         }
@@ -121,6 +131,7 @@ public class SudokuGameManager : MonoBehaviour
 
     public void GenerateNewPuzzle()
     {
+        isGenerating = true; // ✰ Mute sounds/scoring while the puzzle generates ✰
         gameIsOver = false;
         if (winScreen != null) winScreen.SetActive(false);
         if (solveConfirmPanel != null) solveConfirmPanel.SetActive(false);
@@ -144,6 +155,7 @@ public class SudokuGameManager : MonoBehaviour
         score = 0;
         mistakesMade = new bool[9, 9];
         UpdateScoreUI();
+        isGenerating = false; // ✰ Generation is done, re-enable sounds/scoring ✰
     }
 
     private void RemoveNumbers()
@@ -265,6 +277,9 @@ public class SudokuGameManager : MonoBehaviour
 
     public void OnCellValueChanged(int row, int col, string value)
     {
+        // ✰ If we are generating the puzzle, don't do anything here! ✰
+        if (isGenerating) return;
+
         if (gridGenerator.gridCells[row, col].readOnly) return;
 
         if (string.IsNullOrEmpty(value))
@@ -362,4 +377,36 @@ public class SudokuGameManager : MonoBehaviour
         sb.AppendLine("-------------------------------");
         Debug.Log(sb.ToString());
     }
+
+    #region Array Conversion Helpers
+    private T[] To1DArray<T>(T[,] input)
+    {
+        if (input == null) return null;
+        int width = input.GetLength(0);
+        int height = input.GetLength(1);
+        T[] output = new T[width * height];
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                output[i * height + j] = input[i, j];
+            }
+        }
+        return output;
+    }
+
+    private T[,] To2DArray<T>(T[] input, int width, int height)
+    {
+        if (input == null) return null;
+        T[,] output = new T[width, height];
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                output[i, j] = input[i * height + j];
+            }
+        }
+        return output;
+    }
+    #endregion
 }
