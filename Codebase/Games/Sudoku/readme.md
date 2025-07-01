@@ -1,5 +1,11 @@
 # Change Log - Sudoku Tiny Build
 
+# Version InDev 0.0.5 2025-07-01
+
+Bug Fix (Save/Load): Refactored the save data structure to use single-dimensional arrays instead of multi-dimensional arrays, as Unity's JsonUtility does not support them. This fixes a critical bug where loading a saved game would cause a NullReferenceException and fail to generate the grid.
+
+Bug Fix (Audio System): Added a boolean flag isGenerating to SudokuGameManager to prevent OnCellValueChanged from firing during initial puzzle generation and loading, which was causing unwanted sound effects to play.
+
 ---
 
 # Version InDev 0.0.4 - 2025-06-30
