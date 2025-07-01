@@ -4,6 +4,8 @@
 
 First Live/Playtest Build
 
+---
+
 ### Version InDev 0.0.5a - 2025-07-01
 
 Bug Fix (Save/Load): Refactored the save data structure to use single-dimensional arrays instead of multi-dimensional arrays, as Unity's JsonUtility does not support them. This fixes a critical bug where loading a saved game would cause a NullReferenceException and fail to generate the grid.
