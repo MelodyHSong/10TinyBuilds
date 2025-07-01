@@ -1,10 +1,10 @@
-# This file lists all free the assets used in the 10 Tiny Builds - Sudoku project.
+﻿# This file lists all free the assets used in the 10 Tiny Builds - Sudoku project.
 
 ---
 
 Author: ✰ @MelodyHSong ✰
 
-Date: 2025-06-30
+Date: 2025-07-01
 
 Project: 10TinyBuilds-Sudoku
 
