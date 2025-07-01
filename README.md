@@ -8,6 +8,10 @@ Welcome! This repository will eventually hold the source code for all ten projec
 
 **(Status: Completed - v1.0.0b)**
 
+---
+
 2. [Marbles!] - _Coming Soon!_
+
+---
 
 ### ✰ MelodyHSong ✰
